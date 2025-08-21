@@ -1,0 +1,221 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "2ce05e31-3224-4ef0-952a-4882b9a90df3",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1t1zddw-SxU7oxeLx31uzlSTU2meHHphbviJy5k8PPSg",
+          "mode": "list",
+          "cachedResultName": "ais3_club",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t1zddw-SxU7oxeLx31uzlSTU2meHHphbviJy5k8PPSg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1t1zddw-SxU7oxeLx31uzlSTU2meHHphbviJy5k8PPSg/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "9e20f464-eec2-4051-ad6d-f37b7c133ff9",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "QSYBE9lsDoiQJsCF",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "36556ba3-38bb-4053-b4d5-d4369f5c015b",
+              "leftValue": "={{ $json['繳費狀態'] }}",
+              "rightValue": "False",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "8ea17de3-d513-4f75-9140-2f5ce3f54826",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const principal = Number($json[\"欠款金額\"]);\nconst startDate = new Date(\"2025-08-01\"); // 設定應繳日期\nconst daysLate = Math.max(0, Math.floor((Date.now() - startDate) / (1000 * 60 * 60 * 24)));\nconst interestRate = 0.01; // 每日1%利息\nconst interest = Math.floor(principal * interestRate * daysLate);\nconst total = principal + interest;\n\n// 把 prompt 組裝好，交給 OpenAI Node\nconst prompt = `\n以下是一個「ais3資安研究社」的社費欠繳人的資訊。\n請幫我生成一封帶有極具情緒勒索特色的 Email 「內文」，內容包含：\n- 收件人：${$json[\"姓名\"]}\n- 原始社費：NT$${principal}\n- 已逾天數：${daysLate} 天\n- 當前利息：NT$${interest}\n- 總計需繳：NT$${total}\n'\n備註：請直接生成內容 不需要解釋的輔助文字\n`;\n\nreturn {\n  姓名: $json[\"姓名\"],\n  Email: $json[\"Email\"],\n  欠款金額: principal,\n  已逾天數: daysLate,\n  利息: interest,\n  總額: total,\n  prompt: prompt\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "e74b2ecd-aa6b-4db9-9813-c0228aff3957",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "e52b84c1-e4e8-437d-b8c5-91dd5114908d",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "jYkeZOyNoW9NfEQo",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('If').item.json.email }}",
+        "subject": "ㄟ繳社費",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1184,
+        -96
+      ],
+      "id": "4ead81bc-4ec3-4cb6-a6c4-a3c547da454c",
+      "name": "Send a message",
+      "webhookId": "ce21750c-29e5-412b-991c-f52e71a98500",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MQ0GGbqlJlyJv57T",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b539ca02-c6be-481e-951f-6edee36c3980",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b76864ed75006c2b532fea8ca50cbd0844ab3edc9ca14a683d9e4148103643b6"
+  },
+  "id": "QqR0rXqoHaDeafXu",
+  "tags": []
+}
