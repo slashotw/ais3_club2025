@@ -1,6 +1,7 @@
 # ais3_club2025
-
-## tldraw link
+## slido 
+[https://app.sli.do/event/hd24gwxMrU14f6fzFbji4T](https://app.sli.do/event/hd24gwxMrU14f6fzFbji4T)
+## tldraw 
 [https://www.tldraw.com/f/u3agNbkgT5Ucsn9uDpTQR?d=v-861.-1156.3248.2039.E0B0_fdPUIVC22Unf2DqY](https://www.tldraw.com/f/u3agNbkgT5Ucsn9uDpTQR?d=v-861.-1156.3248.2039.E0B0_fdPUIVC22Unf2DqY)
 
 ## n8n 
