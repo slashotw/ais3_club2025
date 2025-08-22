@@ -1,4 +1,7 @@
 # ais3_club2025
+
+## slide
+[https://github.com/slashotw/ais3_club2025/blob/main/ais3club2025.pdf](https://github.com/slashotw/ais3_club2025/blob/main/ais3club2025.pdf)
 ## slido 
 [https://app.sli.do/event/hd24gwxMrU14f6fzFbji4T](https://app.sli.do/event/hd24gwxMrU14f6fzFbji4T)
 ## tldraw 
